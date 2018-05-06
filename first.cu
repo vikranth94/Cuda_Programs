@@ -12,7 +12,7 @@ int main()
 int a=5, b=9;
 int *d_a, *d_b;
 cudaMalloc(&d_a, sizeof(int));
-cudaMalloc(
+cudaMalloc(&d_b, sizeof(int));
 
 return 0;
 }
