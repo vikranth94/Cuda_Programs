@@ -2,9 +2,9 @@
 #include <cuda.h>
 using namespace std;
 
-_global_ void AddIntsCUDA(int *a, int *b)
+__global__ void AddIntsCUDA(int *a, int *b)
 {
-a[0] += b[0]
+a[0] += b[0];
 }
 
 int main()
