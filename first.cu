@@ -14,5 +14,5 @@ int *d_a, *d_b;
 cudaMalloc(&d_a, sizeof(int));
 cudaMalloc(&d_b, sizeof(int));
 
-return 1;
+return 0;
 }
