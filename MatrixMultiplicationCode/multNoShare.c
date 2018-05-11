@@ -87,6 +87,7 @@ __global__ void MatMulKernel(Matrix A, Matrix B, Matrix C) {
   if(row > A.height || col > B.width) return;
   for (int e = 0; e < A.width; ++e) 
     Cvalue += (A.elements[row * A.width + e]) * (B.elements[e * B.width + col]); 
+  Cvalue = (Cvalue>0) ? Cvalue : Cvalue/4;
   C.elements[row * C.width + col] = Cvalue; 
 }
 

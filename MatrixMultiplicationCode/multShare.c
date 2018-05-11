@@ -151,6 +151,7 @@ __global__ void MatMulKernel(Matrix A, Matrix B, Matrix C) {
 
   // Write Csub to device memory 
   // Each thread writes one element 
+  Cvalue = (Cvalue>0) ? Cvalue : Cvalue/4;
   SetElement(Csub, row, col, Cvalue); 
 }
 
