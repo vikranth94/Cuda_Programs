@@ -52,7 +52,7 @@ void compare(Matrix C, Matrix C_shared, int size) {
 
 // Matrix multiplication - Host code 
 // Matrix dimensions are assumed to be multiples of BLOCK_SIZE 
-void MatMul_Shared(const Matrix A, const Matrix B, Matrix C_shared) { 
+Matrix MatMul_Shared(const Matrix A, const Matrix B, Matrix C_shared) { 
 
   // Load A and B to device memory 
   Matrix d_A; 
@@ -98,6 +98,7 @@ void MatMul_Shared(const Matrix A, const Matrix B, Matrix C_shared) {
   cudaFree(d_A.elements); 
   cudaFree(d_B.elements); 
   cudaFree(d_C.elements); 
+  return C_shared;
 } 
 
 // Get a matrix element
@@ -277,7 +278,7 @@ int main(int argc, char* argv[]){
   for(int i = 0; i < B.height; i++)
     for(int j = 0; j < B.width; j++)
       B.elements[i*B.width + j] = (rand() % 2);
-  MatMul_Shared(A, B, C_shared);
+  C_shared = MatMul_Shared(A, B, C_shared);
   MatMul(A, B, C);
   compare(C, C_shared, b2);
   /*
