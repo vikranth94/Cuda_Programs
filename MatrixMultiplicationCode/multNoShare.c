@@ -122,7 +122,7 @@ int main(int argc, char* argv[]){
       B.elements[i*B.width + j] = (float)(rand() % 2);
 
   MatMul(A, B, C);
-  /*
+  
   // Print up to a 10x10 portion of the three matrices
   for(int i = 0; i < min(10, A.height); i++){
     for(int j = 0; j < min(10, A.width); j++)
@@ -144,5 +144,5 @@ int main(int argc, char* argv[]){
     printf("\n");
   }
   printf("\n");
-  */
+  
 }
