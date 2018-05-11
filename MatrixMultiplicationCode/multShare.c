@@ -184,7 +184,7 @@ int main(int argc, char* argv[]){
   begin_roi();
   MatMul(A, B, C);
   end_roi();
-  
+  /*
   for(int i = 0; i < min(10, A.height); i++){
     for(int j = 0; j < min(10, A.width); j++)
       printf("%f ", A.elements[i*A.width + j]);
@@ -205,5 +205,5 @@ int main(int argc, char* argv[]){
     printf("\n");
   }
   printf("\n");
-  
+  */
 }
