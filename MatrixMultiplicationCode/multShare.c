@@ -26,9 +26,33 @@ __attribute__ ((noinline))  void end_roi()   {
   std::cout << "elapsed (sec): " << usec/1000000.0 << "\n";
 }
 
+void compare(Matrix C, Matrix C_shared, int size) {
+  bool error = false;
+  for(int i = 0; i < size; ++i) {
+      float diff = C.elements[i] - C_shared.elements[i];
+      if(diff>0.001f || diff <-0.001f) {
+      error = true; 
+      break;
+    }
+  }
+  if(error) {
+    for(int i = 0; i < size; ++i) {
+      std::cout << i << " " << C.elements[i] << ":" << C_shared.elements[i];;
+
+      float diff = C.elements[i] - C_shared.elements[i];
+      if(diff>0.001f || diff <-0.001f) {
+        std::cout << " \t\tERROR";
+      }
+      std::cout << "\n";
+    }
+  } else {
+    std::cout << "results match\n";
+  }
+}
+
 // Matrix multiplication - Host code 
 // Matrix dimensions are assumed to be multiples of BLOCK_SIZE 
-void MatMul_Shared(const Matrix A, const Matrix B, Matrix C) { 
+void MatMul_Shared(const Matrix A, const Matrix B, Matrix C_shared) { 
 
   // Load A and B to device memory 
   Matrix d_A; 
@@ -51,9 +75,9 @@ void MatMul_Shared(const Matrix A, const Matrix B, Matrix C) {
 
   // Allocate C in device memory 
   Matrix d_C; 
-  d_C.width = d_C.stride = C.width; 
-  d_C.height = C.height; 
-  size = C.width * C.height * sizeof(float); 
+  d_C.width = d_C.stride = C_shared.width; 
+  d_C.height = C_shared.height; 
+  size = C_shared.width * C_shared.height * sizeof(float); 
   err = cudaMalloc(&d_C.elements, size); 
   printf("CUDA malloc C: %s\n",cudaGetErrorString(err));
 
@@ -67,7 +91,7 @@ void MatMul_Shared(const Matrix A, const Matrix B, Matrix C) {
     printf("Run kernel: %s\n", cudaGetErrorString(err));
 
   // Read C from device memory 
-  err = cudaMemcpy(C.elements, d_C.elements, size, cudaMemcpyDeviceToHost); 
+  err = cudaMemcpy(C_shared.elements, d_C.elements, size, cudaMemcpyDeviceToHost); 
   printf("Copy C off of device: %s\n",cudaGetErrorString(err));
 
   // Free device memory
@@ -223,7 +247,7 @@ __global__ void MatMulKernel(Matrix A, Matrix B, Matrix C) {
 
 
 int main(int argc, char* argv[]){
-  Matrix A, B, C;
+  Matrix A, B, C, C_shared;
   int a1, a2, b1, b2;
   a1 = atoi(argv[1]);			/* Height of A */
   a2 = atoi(argv[2]);			/* Width  of A */
@@ -242,6 +266,10 @@ int main(int argc, char* argv[]){
   C.width = B.width;
   C.elements = (float*)malloc(C.width * C.height * sizeof(float));
 
+  C_shared.height = A.height;
+  C_shared.width = B.width;
+  C_shared.elements = (float*)malloc(C.width * C.height * sizeof(float));
+
   for(int i = 0; i < A.height; i++)
     for(int j = 0; j < A.width; j++)
       A.elements[i*A.width + j] = (rand() % 3);
@@ -249,8 +277,9 @@ int main(int argc, char* argv[]){
   for(int i = 0; i < B.height; i++)
     for(int j = 0; j < B.width; j++)
       B.elements[i*B.width + j] = (rand() % 2);
-  MatMul_Shared(A, B, C);
+  MatMul_Shared(A, B, C_shared);
   MatMul(A, B, C);
+  compare(C, C_shared, b2);
   /*
   for(int i = 0; i < min(10, A.height); i++){
     for(int j = 0; j < min(10, A.width); j++)
