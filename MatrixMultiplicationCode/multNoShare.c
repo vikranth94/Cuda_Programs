@@ -9,6 +9,23 @@
 
 #include "multNoShare.h"
 
+static __inline__ uint64_t gettime(void) { 
+  struct timeval tv; 
+  gettimeofday(&tv, NULL); 
+  return (((uint64_t)tv.tv_sec) * 1000000 + ((uint64_t)tv.tv_usec)); 
+} 
+
+static uint64_t usec;
+
+__attribute__ ((noinline))  void begin_roi() {
+  usec=gettime();
+}
+
+__attribute__ ((noinline))  void end_roi()   {
+  usec=(gettime()-usec);
+  std::cout << "elapsed (sec): " << usec/1000000.0 << "\n";
+}
+
 // Matrix multiplication - Host code 
 // Matrix dimensions are assumed to be multiples of BLOCK_SIZE 
 void MatMul(const Matrix A, const Matrix B, Matrix C) { 
