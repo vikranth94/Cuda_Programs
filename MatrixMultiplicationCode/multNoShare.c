@@ -60,8 +60,10 @@ void MatMul(const Matrix A, const Matrix B, Matrix C) {
   // Invoke kernel 
   dim3 dimBlock(BLOCK_SIZE, BLOCK_SIZE); 
   dim3 dimGrid((B.width + dimBlock.x - 1) / dimBlock.x, 
-	       (A.height + dimBlock.y - 1) / dimBlock.y); 
+	       (A.height + dimBlock.y - 1) / dimBlock.y);
+  begin_roi(); 
   MatMulKernel<<<dimGrid, dimBlock>>>(d_A, d_B, d_C); 
+  end_roi();
   err = cudaThreadSynchronize();
   printf("Run kernel: %s\n", cudaGetErrorString(err));
   
@@ -118,9 +120,7 @@ int main(int argc, char* argv[]){
     for(int j = 0; j < B.width; j++)
       B.elements[i*B.width + j] = (float)(rand() % 2);
 
-  begin_roi();
   MatMul(A, B, C);
-  end_roi();
   /*
   // Print up to a 10x10 portion of the three matrices
   for(int i = 0; i < min(10, A.height); i++){

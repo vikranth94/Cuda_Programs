@@ -59,7 +59,9 @@ void MatMul(const Matrix A, const Matrix B, Matrix C) {
   // Invoke kernel 
   dim3 dimBlock(BLOCK_SIZE, BLOCK_SIZE); 
   dim3 dimGrid(B.width / dimBlock.x, A.height / dimBlock.y); 
+    begin_roi();
     MatMulKernel<<<dimGrid, dimBlock>>>(d_A, d_B, d_C); 
+    end_roi();
     err = cudaThreadSynchronize();
     printf("Run kernel: %s\n", cudaGetErrorString(err));
 
@@ -181,9 +183,7 @@ int main(int argc, char* argv[]){
   for(int i = 0; i < B.height; i++)
     for(int j = 0; j < B.width; j++)
       B.elements[i*B.width + j] = (rand() % 2);
-  begin_roi();
   MatMul(A, B, C);
-  end_roi();
   /*
   for(int i = 0; i < min(10, A.height); i++){
     for(int j = 0; j < min(10, A.width); j++)
