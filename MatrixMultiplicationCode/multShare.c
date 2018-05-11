@@ -52,7 +52,7 @@ void compare(Matrix C, Matrix C_shared, int size) {
 
 // Matrix multiplication - Host code 
 // Matrix dimensions are assumed to be multiples of BLOCK_SIZE 
-Matrix MatMul_Shared(const Matrix A, const Matrix B, Matrix C_shared) { 
+void MatMul_Shared(const Matrix A, const Matrix B, Matrix C_shared) { 
 
   // Load A and B to device memory 
   Matrix d_A; 
@@ -98,7 +98,6 @@ Matrix MatMul_Shared(const Matrix A, const Matrix B, Matrix C_shared) {
   cudaFree(d_A.elements); 
   cudaFree(d_B.elements); 
   cudaFree(d_C.elements); 
-  return C_shared;
 } 
 
 // Get a matrix element
@@ -269,7 +268,7 @@ int main(int argc, char* argv[]){
 
   C_shared.height = A.height;
   C_shared.width = B.width;
-  C_shared.elements = (float*)malloc(C.width * C.height * sizeof(float));
+  C_shared.elements = (float*)malloc(C_shared.width * C_shared.height * sizeof(float));
 
   for(int i = 0; i < A.height; i++)
     for(int j = 0; j < A.width; j++)
@@ -278,10 +277,10 @@ int main(int argc, char* argv[]){
   for(int i = 0; i < B.height; i++)
     for(int j = 0; j < B.width; j++)
       B.elements[i*B.width + j] = (rand() % 2);
-  C_shared = MatMul_Shared(A, B, C_shared);
-  MatMul(A, B, C);
-  compare(C, C_shared, b2);
-  /*
+  MatMul_Shared(A, B, C_shared);
+ // MatMul(A, B, C);
+ // compare(C, C_shared, b2);
+  
   for(int i = 0; i < min(10, A.height); i++){
     for(int j = 0; j < min(10, A.width); j++)
       printf("%f ", A.elements[i*A.width + j]);
@@ -302,5 +301,5 @@ int main(int argc, char* argv[]){
     printf("\n");
   }
   printf("\n");
-  */
+  
 }

@@ -28,6 +28,6 @@ typedef struct {
 #define BLOCK_SIZE 16
 #endif
 
-__global__ Matrix MatMulSharedKernel(const Matrix, const Matrix, Matrix); 
+__global__ void MatMulSharedKernel(const Matrix, const Matrix, Matrix); 
 __global__ void MatMulKernel(const Matrix, const Matrix, Matrix); 
 
