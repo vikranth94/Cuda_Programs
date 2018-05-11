@@ -8,6 +8,11 @@
  */
 
 #include <stdio.h>
+#include <inttypes.h>
+#include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/time.h>
 
 // Matrices are stored in row-major order: 
 // M(row, col) = *(M.elements + row * M.width + col) 

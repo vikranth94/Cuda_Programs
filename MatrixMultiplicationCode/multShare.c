@@ -9,6 +9,23 @@
 
 #include "multShare.h"
 
+static __inline__ uint64_t gettime(void) { 
+  struct timeval tv; 
+  gettimeofday(&tv, NULL); 
+  return (((uint64_t)tv.tv_sec) * 1000000 + ((uint64_t)tv.tv_usec)); 
+} 
+
+static uint64_t usec;
+
+__attribute__ ((noinline))  void begin_roi() {
+  usec=gettime();
+}
+
+__attribute__ ((noinline))  void end_roi()   {
+  usec=(gettime()-usec);
+  std::cout << "elapsed (sec): " << usec/1000000.0 << "\n";
+}
+
 // Matrix multiplication - Host code 
 // Matrix dimensions are assumed to be multiples of BLOCK_SIZE 
 void MatMul(const Matrix A, const Matrix B, Matrix C) { 
@@ -164,9 +181,10 @@ int main(int argc, char* argv[]){
   for(int i = 0; i < B.height; i++)
     for(int j = 0; j < B.width; j++)
       B.elements[i*B.width + j] = (rand() % 2);
-
+  begin_roi();
   MatMul(A, B, C);
-  /*
+  end_roi();
+  
   for(int i = 0; i < min(10, A.height); i++){
     for(int j = 0; j < min(10, A.width); j++)
       printf("%f ", A.elements[i*A.width + j]);
@@ -187,5 +205,5 @@ int main(int argc, char* argv[]){
     printf("\n");
   }
   printf("\n");
-  */
+  
 }
