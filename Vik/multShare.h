@@ -1,5 +1,5 @@
 /*
- * multNoShare.h
+ * multShare.h
  *
  * Robert Hochberg
  * January 24, 2012
@@ -15,6 +15,7 @@ typedef struct {
   int width; 
   int height; 
   float* elements; 
+  int stride;
 } Matrix; 
 
 // Thread block size 

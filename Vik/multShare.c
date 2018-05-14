@@ -42,7 +42,8 @@ void MatMul(const Matrix A, const Matrix B, Matrix C) {
   // Invoke kernel 
   dim3 dimBlock(BLOCK_SIZE, BLOCK_SIZE); 
   dim3 dimGrid(B.width / dimBlock.x, A.height / dimBlock.y); 
-    MatMulKernel<<<dimGrid, dimBlock>>>(d_A, d_B, d_C); 
+  //  MatMulKernel<<<dimGrid, dimBlock>>>(d_A, d_B, d_C); 
+   MatMulKernel<<<dimGrid, dimBlock>>>(d_A.elements, d_B.elements, d_C.elements, d_A.width, d_A.height, d_B.width, d_B.height, d_C.width, d_C.height); 
     err = cudaThreadSynchronize();
     printf("Run kernel: %s\n", cudaGetErrorString(err));
 
@@ -78,7 +79,43 @@ __device__ Matrix GetSubMatrix(Matrix A, int row, int col) {
   return Asub; 
 }
 
+__global__ void MatMulKernel(float* A, float* B, float* C, int ARows, int ACols, int BRows,
+    int BCols, int CRows, int CCols)
+{
+    float CValue = 0;
 
+    int Row = blockIdx.y*TILE_DIM + threadIdx.y;
+    int Col = blockIdx.x*TILE_DIM + threadIdx.x;
+
+    __shared__ float As[TILE_DIM][TILE_DIM];
+    __shared__ float Bs[TILE_DIM][TILE_DIM];
+
+    for (int k = 0; k < (TILE_DIM + ACols - 1)/TILE_DIM; k++) {
+
+         if (k*TILE_DIM + threadIdx.x < ACols && Row < ARows)
+             As[threadIdx.y][threadIdx.x] = A[Row*ACols + k*TILE_DIM + threadIdx.x];
+         else
+             As[threadIdx.y][threadIdx.x] = 0.0;
+
+         if (k*TILE_DIM + threadIdx.y < BRows && Col < BCols)
+             Bs[threadIdx.y][threadIdx.x] = B[(k*TILE_DIM + threadIdx.y)*BCols + Col];
+         else
+             Bs[threadIdx.y][threadIdx.x] = 0.0;
+
+         __syncthreads();
+
+         for (int n = 0; n < TILE_DIM; ++n)
+             CValue += As[threadIdx.y][n] * Bs[n][threadIdx.x];
+
+         __syncthreads();
+    }
+
+    if (Row < CRows && Col < CCols)
+        C[((blockIdx.y * blockDim.y + threadIdx.y)*CCols) +
+           (blockIdx.x * blockDim.x)+ threadIdx.x] = CValue;
+}
+
+/*
 // Matrix multiplication kernel called by MatMul() 
 __global__ void MatMulKernel(Matrix A, Matrix B, Matrix C) { 
   // Block row and column 
@@ -135,7 +172,7 @@ __global__ void MatMulKernel(Matrix A, Matrix B, Matrix C) {
   SetElement(Csub, row, col, Cvalue); 
 }
 
-
+*/
 
 int main(int argc, char* argv[]){
   Matrix A, B, C;

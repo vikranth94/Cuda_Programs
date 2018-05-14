@@ -9,23 +9,6 @@
 
 #include "multNoShare.h"
 
-static __inline__ uint64_t gettime(void) { 
-  struct timeval tv; 
-  gettimeofday(&tv, NULL); 
-  return (((uint64_t)tv.tv_sec) * 1000000 + ((uint64_t)tv.tv_usec)); 
-} 
-
-static uint64_t usec;
-
-__attribute__ ((noinline))  void begin_roi() {
-  usec=gettime();
-}
-
-__attribute__ ((noinline))  void end_roi()   {
-  usec=(gettime()-usec);
-  std::cout << "elapsed (sec): " << usec/1000000.0 << "\n";
-}
-
 // Matrix multiplication - Host code 
 // Matrix dimensions are assumed to be multiples of BLOCK_SIZE 
 void MatMul(const Matrix A, const Matrix B, Matrix C) { 
@@ -60,10 +43,8 @@ void MatMul(const Matrix A, const Matrix B, Matrix C) {
   // Invoke kernel 
   dim3 dimBlock(BLOCK_SIZE, BLOCK_SIZE); 
   dim3 dimGrid((B.width + dimBlock.x - 1) / dimBlock.x, 
-	       (A.height + dimBlock.y - 1) / dimBlock.y);
-  begin_roi(); 
+	       (A.height + dimBlock.y - 1) / dimBlock.y); 
   MatMulKernel<<<dimGrid, dimBlock>>>(d_A, d_B, d_C); 
-  end_roi();
   err = cudaThreadSynchronize();
   printf("Run kernel: %s\n", cudaGetErrorString(err));
   
@@ -87,7 +68,6 @@ __global__ void MatMulKernel(Matrix A, Matrix B, Matrix C) {
   if(row > A.height || col > B.width) return;
   for (int e = 0; e < A.width; ++e) 
     Cvalue += (A.elements[row * A.width + e]) * (B.elements[e * B.width + col]); 
-  Cvalue = (Cvalue>0) ? Cvalue : Cvalue/4;
   C.elements[row * C.width + col] = Cvalue; 
 }
 
@@ -122,7 +102,7 @@ int main(int argc, char* argv[]){
       B.elements[i*B.width + j] = (float)(rand() % 2);
 
   MatMul(A, B, C);
-  
+  /*
   // Print up to a 10x10 portion of the three matrices
   for(int i = 0; i < min(10, A.height); i++){
     for(int j = 0; j < min(10, A.width); j++)
@@ -144,5 +124,5 @@ int main(int argc, char* argv[]){
     printf("\n");
   }
   printf("\n");
-  
+  */
 }
